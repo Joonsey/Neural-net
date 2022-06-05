@@ -9,11 +9,14 @@
 #include <float.h>
 
 
+#define TEST_SEED 1337
+#define TRAIN_SEED 80085
 #define HEIGHT 50
 #define WIDTH 50
 #define PPM_SCALAR 25
-#define SAMPLE_SIZE 100
-#define BIAS 10.0
+#define SAMPLE_SIZE 1000
+#define BIAS -25.0
+#define EPOCHS 200
 typedef float Layer[HEIGHT][WIDTH];
 
 void layer_save_as_ppm(Layer layer, const char *file_path) 
@@ -188,42 +191,52 @@ void layer_random_circle(Layer layer)
 		layer_fill_circle(layer, cx, cy, r, 1.0f);
 }
 
-bool pass_train(Layer inputs, Layer weights)
+int pass_train(Layer inputs, Layer weights)
 {
-	bool done = true;
+	int adjustments = 0;
 
 	for (int i = 0; i < SAMPLE_SIZE; i++) {
 			layer_random_rect(inputs);
 			if (fit_forward(inputs, weights) > BIAS) 
 			{
 					supress_weights(inputs, weights);
-					done = false;
+					adjustments+=1;
 			}
 
 			layer_random_circle(inputs);
 			if (fit_forward(inputs, weights) < BIAS) 
 			{
 					excite_weights(inputs, weights);
-					done = false;
+					adjustments+=1;
 			}
 
 	}
-	return done;
+	return adjustments;
 }
 static Layer inputs;
 static Layer weights;
 int main() {
 
-	int epoch = 0;
-	while (!pass_train(inputs, weights)){
-			srand(69);
-			printf("training on epoch: %d\n", epoch);
-			if (epoch == 3000) {
+	char file_path[256];
+	float total_tries = SAMPLE_SIZE*2.0f;
+	srand(TEST_SEED);
+	int adjustments = pass_train(inputs, weights);
+	printf("the untrained models failed %d times on new data\n", adjustments);
+	for (int e = 0; e < EPOCHS; e++) 
+	{
+			srand(TRAIN_SEED);
+			adjustments = pass_train(inputs, weights);
+			printf("# of adjustments: %d\n", adjustments);
+			snprintf(file_path, sizeof(file_path), "weights-%02d.ppm", e);
+			if (adjustments == 0) {
 					break;
 			}
-			epoch ++;
-			continue;
 	}
-	layer_save_as_ppm(weights, "weights.ppm");
+	printf("the train accuracy is %f\n", (total_tries -adjustments)/total_tries);
+	srand(TEST_SEED);
+	adjustments = pass_train(inputs, weights);
+	printf("the trained models failed %d times on new data\n", adjustments);
+	printf("the test accuracy is %f\n", (total_tries -adjustments)/total_tries);
+	layer_save_as_ppm(weights, file_path);
 	return 0;
 }
