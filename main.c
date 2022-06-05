@@ -214,9 +214,9 @@ static Layer inputs;
 static Layer weights;
 int main() {
 
-	srand(69);
 	int epoch = 0;
 	while (!pass_train(inputs, weights)){
+			srand(69);
 			printf("training on epoch: %d\n", epoch);
 			if (epoch == 3000) {
 					break;
