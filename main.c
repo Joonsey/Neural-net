@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <float.h>
 
-
 #define TEST_SEED 1337
 #define TRAIN_SEED 80085
 #define HEIGHT 50
@@ -17,6 +16,7 @@
 #define SAMPLE_SIZE 1000
 #define BIAS -25.0
 #define EPOCHS 200
+
 typedef float Layer[HEIGHT][WIDTH];
 
 void layer_save_as_ppm(Layer layer, const char *file_path)
@@ -29,6 +29,7 @@ void layer_save_as_ppm(Layer layer, const char *file_path)
 			if (layer[y][x] > max) max = layer[y][x];
 		}
 	}
+
 	FILE *f = fopen(file_path, "wb");
 	if (f == NULL){
 		fprintf(stderr, "ERROR: could not open file %s: %m\n", file_path);
@@ -57,7 +58,8 @@ void layer_save_as_ppm(Layer layer, const char *file_path)
 void layer_save_as_bin(Layer layer, const char *file_path)
 {
 	FILE *f = fopen(file_path, "wb");
-	if (f == NULL) {
+	if (f == NULL)
+	{
 		fprintf(stderr, "ERROR: could not open file as %s: %m", file_path);
 		exit(1);
 	}
@@ -97,6 +99,7 @@ void layer_fill_rect(Layer layer, int x, int y, int w, int h, float value)
 void layer_fill_circle(Layer layer, int cx, int cy, int r, float value)
 {
 	assert(r > 0);
+
 	int x0 = clampi(cx - r, 0, WIDTH-1);
 	int y0 = clampi(cy - r, 0, HEIGHT-1);
 	int x1 = clampi(cx + r, 0, WIDTH-1);
@@ -106,7 +109,8 @@ void layer_fill_circle(Layer layer, int cx, int cy, int r, float value)
 		for (int x = x0; x < x1; x++) {
 			int dx = x - cx;
 			int dy = y - cy;
-			if (dx*dx + dy*dy <= r*r) {
+			if (dx*dx + dy*dy <= r*r)
+			{
 				layer[y][x] = value;
 			}
 		}
@@ -116,35 +120,25 @@ void layer_fill_circle(Layer layer, int cx, int cy, int r, float value)
 float fit_forward(Layer inputs, Layer weights)
 {
 	float output = 0.0f;
-
 	for (int y = 0; y < HEIGHT; y++)
-	{
 		for (int x = 0; x < WIDTH; x++)
-		{
 			output += inputs[y][x] * weights[y][x];
-		}
-	}
+
 	return output;
 }
 
 void excite_weights(Layer inputs, Layer weights)
 {
-	for (int y = 0; y < HEIGHT; y++){
+	for (int y = 0; y < HEIGHT; y++)
 		for (int x = 0; x < WIDTH; x++)
-		{
 			weights[y][x] += inputs[y][x];
-		}
-	}
 }
 
 void supress_weights(Layer inputs, Layer weights)
 {
-	for (int y = 0; y < HEIGHT; y++){
+	for (int y = 0; y < HEIGHT; y++)
 		for (int x = 0; x < WIDTH; x++)
-		{
 			weights[y][x] -= inputs[y][x];
-		}
-	}
 }
 
 int rand_range(int low, int high)
@@ -153,7 +147,7 @@ int rand_range(int low, int high)
 	return rand() % (high - low) + low;
 }
 
-void layer_random_rect(Layer layer) 
+void layer_random_rect(Layer layer)
 {
 
 	layer_fill_rect(layer, 0, 0, WIDTH, HEIGHT, 0.0f);
@@ -189,9 +183,9 @@ void layer_random_circle(Layer layer)
 int pass_train(Layer inputs, Layer weights)
 {
 	int adjustments = 0;
-
 	for (int i = 0; i < SAMPLE_SIZE; i++) {
 		layer_random_rect(inputs);
+
 		if (fit_forward(inputs, weights) > BIAS)
 		{
 			supress_weights(inputs, weights);
@@ -206,8 +200,10 @@ int pass_train(Layer inputs, Layer weights)
 		}
 
 	}
+
 	return adjustments;
 }
+
 static Layer inputs;
 static Layer weights;
 int main() {
@@ -221,14 +217,15 @@ int main() {
 	{
 		srand(TRAIN_SEED);
 		adjustments = pass_train(inputs, weights);
-		printf("# of adjustments: %d\n", adjustments);
-		snprintf(file_path, sizeof(file_path), "weights-%02d.ppm", e);
+		printf("# of adjustments: %d, on epoch: %d\n", adjustments, e);
+		snprintf(file_path, sizeof(file_path), "imgs/weights-%02d.ppm", e);
+		layer_save_as_ppm(weights, file_path);
 		if (adjustments == 0) {
 			break;
 		}
 	}
 	printf("the train accuracy is %f\n", (total_tries -adjustments)/total_tries);
-	srand(TEST_SEED);
+	//srand(TEST_SEED);
 	adjustments = pass_train(inputs, weights);
 	printf("the trained models failed %d times on new data\n", adjustments);
 	printf("the test accuracy is %f\n", (total_tries -adjustments)/total_tries);
