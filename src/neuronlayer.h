@@ -1,3 +1,4 @@
+#pragma once
 #include "neuron.h"
 
 namespace neuralnet
