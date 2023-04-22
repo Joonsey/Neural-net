@@ -5,7 +5,12 @@
 int main()
 {
     for (auto& testFunc : getTestRegistry()) {
-		std::cout << "running test " << testFunc.name << std::endl;
+		std::cout
+			<< "running test '"
+			<< testFunc.name
+			<< "' in "
+			<< testFunc.file
+			<< std::endl;
         testFunc.function();
     }
     return 0;

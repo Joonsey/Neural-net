@@ -8,6 +8,7 @@ using TestFunc = std::function<void()>;
 typedef struct {
 	TestFunc function;
 	std::string name;
+	std::string file;
 } test_case;
 
 std::vector<test_case>& getTestRegistry()
@@ -20,7 +21,7 @@ std::vector<test_case>& getTestRegistry()
 #define TEST_CASE(name) \
     void name(); \
     static bool name##Registered = []() { \
-        getTestRegistry().push_back({name, #name}); \
+        getTestRegistry().push_back({name, #name, __FILE__}); \
         return true; \
     }(); \
     void name()
