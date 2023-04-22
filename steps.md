@@ -1,0 +1,11 @@
+#steps:
+-Define the architecture of your network (how many layers, how many neurons per layer, activation functions, etc.)
+-Create a class to represent a neuron, including its weights and bias.
+-Implement the activation function(s) for your neuron(s).
+-Create a class to represent a layer of neurons, including methods to compute the output of the layer.
+-Implement forward propagation for your network, computing the output for each layer based on the inputs and passing that output as input to the next layer.
+-Define the loss function you'll use to measure the error of your network.
+-Implement backpropagation, updating the weights and biases of each neuron in each layer to minimize the loss function.
+-Train your network by feeding it training data, computing the loss, and backpropagating to update the weights and biases.
+-Test your network on a validation set to ensure it's not overfitting to the training data.
+-Once you're happy with the performance of your network, use it to make predictions on new, unseen data.
